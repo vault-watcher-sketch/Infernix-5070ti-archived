@@ -24,7 +24,7 @@ RUN cmake -S . -B /build -G Ninja \
         -DINFERNIX_BUILD_APPS=ON \
         -DBUILD_TESTING=OFF \
         -DINFERNIX_BUILD_BENCHMARKS=OFF \
-    && cmake --build /build --parallel --target infernix infernix-serve
+    && cmake --build /build --parallel --target infernix infernix-serve infernix-probe
 
 FROM nvidia/cuda:13.1.2-runtime-ubuntu24.04
 
@@ -42,6 +42,7 @@ RUN apt-get update \
 
 COPY --from=build /build/apps/infernix /usr/local/bin/infernix
 COPY --from=build /build/apps/infernix-serve /usr/local/bin/infernix-serve
+COPY --from=build /build/apps/infernix-probe /usr/local/bin/infernix-probe
 
 WORKDIR /workspace
 EXPOSE 8080
