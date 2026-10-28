@@ -42,6 +42,13 @@ target_include_directories(infernix-serve PRIVATE
 target_link_libraries(infernix-serve PRIVATE infernix_serve infernix_product_config infernix_product_logging)
 infernix_stage_runtime_dlls(infernix-serve)
 
+add_executable(infernix-probe probe/main.cpp)
+infernix_internal_includes(infernix-probe)
+target_include_directories(infernix-probe PRIVATE
+  /usr/local/cuda/include
+  /usr/local/cuda/targets/x86_64-linux/include)
+target_link_libraries(infernix-probe PRIVATE infernix_engine infernix_product_logging infernix::json)
+
 add_executable(infernix-perplexity
   perplexity/main.cpp
   perplexity/corpus.cpp
