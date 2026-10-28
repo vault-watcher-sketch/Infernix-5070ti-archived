@@ -4,6 +4,8 @@
 > written with AI (mostly Claude Opus 5.5 and Qwen3.8-27B running on Infernix). It is likely to be
 > neither complete nor entirely accurate. This is hobby development.
 
+**Fork of Wallawalla47/Infernix for the RTX 5070 Ti (16 GB).** All 5070 Ti adaptation lives here; upstream PRs are not opened (the upstream repo is 5090-focused). Shipped in this tree: safe-OOM prefill recovery, submit-time prefill-capacity guardrail, and the self-healing wide-arena fit ladder (incl. the zero-lendable vision path) - 160K to 215K-token prompts serve on one 5070 Ti with dflash2 enabled, container args frozen at --max-context 262144. Details: [NOTES-5070ti.md](NOTES-5070ti.md); current image tag `infernix-5070ti:v11-vision-ladder-20261029`.
+
 Infernix is a C++/CUDA inference engine that serves Qwen models on one NVIDIA RTX 50-series GPU
 (tuned on the RTX 5090). It began as a fork of [NInfer](https://github.com/Neroued/ninfer) by
 [Neroued](https://github.com/Neroued) and reads NInfer's `.ninfer` artifacts as well as its own

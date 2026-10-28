@@ -73,3 +73,12 @@ so --prefill-chunk does not shrink it yet - chunked-workspace patch to follow.
 Probe tooling in-tree: `apps/probe` prints the arena-sizing grid (no model materialize):
 `docker run --rm -v <weights>:/data --gpus device=N --entrypoint infernix-probe <image>
 /data/<main>.infernix /data/<draft>.infernix`.
+
+
+## Current deployment (10-29)
+
+- Live on epyc7532 GPU0 p8080: `infernix-5070ti:v11-vision-ladder-20261029` (= main 479e584:
+  upstream d8e52a8 + safe-OOM/guardrail 5727d5d + arena re-fit c4c53a1 + vision zero-lendable ladder 8ed8be3).
+- Delivery policy: FORK-ONLY. PR #44/#46 to Wallawalla47/Infernix closed per repo-owner decision (10-28).
+- Validation artifacts: `~/AIOS-New-Project-Center/Infernix-epyc7532/patches-5070ti-20261028/results/`
+  (swap tests, 256K/250K ladders, vision media9 gate 200/43.6s); incident trail CAPA-20261028-002 v1.5.
