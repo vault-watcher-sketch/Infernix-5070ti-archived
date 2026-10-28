@@ -4246,7 +4246,11 @@ private:
     // wider chunk stay as they are. `lendable` counts frames of `stride` bytes the cache can lend (a
     // cache of several frame pools lends from one: ExpertResidency::lend_capacity_bytes).
     void fit_wide_work_to_cache(std::uint64_t lendable, std::uint64_t stride) {
-        if (wide_work_ == 0 || lendable == 0 || stride == 0) { return; }
+        // A zero  (the cache fully evicted, or a vision window holding every frame) must
+        // step the chunk all the way to the static width: the loop below ends at plan_.static_columns
+        // with wide_work_ = 0, which is exactly the fit when nothing can be lent. Returning here
+        // used to leave the plan pinned at an unallocatable arena - the retry ladder idled.
+        if (wide_work_ == 0 || stride == 0) { return; }
         const auto frames_for        = [&](std::size_t bytes) { return (bytes + stride - 1) / stride; };
         if (frames_for(wide_work_) < lendable) { return; }
         const std::int32_t requested = chunk_;
@@ -4303,10 +4307,12 @@ private:
                         }
                         if (chunk_ < was) {
                             diagnostic("the prefill workspace will be fitted at " + std::to_string(chunk_) +
-                                           " tokens for following prompts (" +
-                                           std::to_string(wide_work_ >> 20) +
-                                           " MiB); the failed prompt needs a retry",
-                                       DiagnosticLevel::Info);
+                                           " tokens for following prompts (arena " +
+                                           std::to_string(wide_work_ >> 20) + " MiB" +
+                                           (wide_work_ == 0 ? ", static width only: nothing was lendable, no fresh "
+                                                              "allocation fits" : "") +
+                                           "); the failed prompt needs a retry",
+                                       DiagnosticLevel::Warning);
                         }
                         throw runtime::RecoverableExecutionError(
                             "the prefill workspace (" + std::to_string(wide_work_ >> 20) +
