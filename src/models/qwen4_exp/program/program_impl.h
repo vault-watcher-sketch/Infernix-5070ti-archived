@@ -4294,7 +4294,8 @@ private:
                         // The cache shrank under VRAM pressure since the plan-time fit: re-fit against
                         // what is lendable NOW. The exact route's bits are chunk-invariant, so every
                         // later prompt prefills at the widest halving that fits (only speed changes).
-                        // This request still fails alone; its successor arrives with the shrunk plan.
+                        // Recovery answers the requests in flight (the Engine serves on); their
+                        // successors arrive with the shrunk plan.
                         const std::int32_t was = chunk_;
                         if (residency_->frames() > 0 && residency_->lend_pitch() > 0) {
                             fit_wide_work_to_cache(residency_->lend_capacity_bytes() / residency_->lend_pitch(),
