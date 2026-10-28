@@ -262,10 +262,12 @@ NInfer's 4.479 on the 1.04M-token corpus (16K context, INT8 KV; NInfer `81c8ce09
 
 ## Quick start (Windows)
 
-Prerequisites: Visual Studio 2026 (or 2022, MSVC 14.44), the CUDA 13 toolkit, and FFmpeg,
-libjpeg-turbo and curl from vcpkg (`x64-windows`, at `C:\vcpkg`; `vcpkg install
-libjpeg-turbo:x64-windows` adds libjpeg-turbo to an existing tree); adjust the paths at the top of
-`build_native.bat` (and its generator for VS 2022).
+Prerequisites: Visual Studio 2026 (or 2022, MSVC 14.44) with its C++ CMake tools (they bring Ninja),
+the CUDA 13 toolkit, and FFmpeg, libjpeg-turbo and curl from vcpkg (`x64-windows`, at `C:\vcpkg`;
+`vcpkg install libjpeg-turbo:x64-windows` adds libjpeg-turbo to an existing tree); adjust the paths at
+the top of `build_native.bat`. It builds with Ninja Multi-Config (about 30 % faster than the Visual
+Studio generator); a `build-windows` tree from the Visual Studio generator is configured afresh on its
+next build.
 
 ```bat
 build_native.bat configure
@@ -313,6 +315,11 @@ measured overall, and `auto` picks the draft length):
 | Qwen3.6-35B-A3B | `--spec mtp --draft-tokens auto --lm-head-draft` | the per-round MTP length, 1-5 (DFlash `auto` is faster only on code at one request) |
 | Qwen3.6-27B (NVFP4, groupwise) | `--spec mtp --draft-tokens auto --lm-head-draft` | the per-round MTP length where its configuration registers `adaptive-mtp` (startup reports it), else 3 every round |
 | Ornith-1.5-122B (and its UNCENSORED conversion) | `--spec mtp --draft-tokens auto` | 2 confidence-gated drafts: 14 % faster than plain decode at one request, about 6 % slower while two decode together; DFlash2's `auto` decodes plain |
+
+Flash-Next keeps every routed expert in RAM by default (`--expert-ram-layout full`);
+`--expert-ram-layout exclusive` keeps only the experts VRAM does not hold, about 15 GiB less RAM on the
+NVFP4 conversions and 7 GiB on IQ3_S, at 1-2 % (NVFP4) and 12 % (IQ3_S) slower decode
+([guide](docs/qwen3_8-flash-next.md)).
 
 `--prefix-cache-file PATH` keeps the prefix cache across restarts (Ctrl+C twice saves it and exits).
 `infernix-serve.exe --help` lists every option; `--config FILE` reads them from a TOML file

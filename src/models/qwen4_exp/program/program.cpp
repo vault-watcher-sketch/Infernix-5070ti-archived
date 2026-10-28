@@ -43,8 +43,6 @@ RequestBasePlan Program::plan_request(PreparedPrompt&& prompt, const runtime::Re
     return impl_->plan_request(std::move(prompt), options);
 }
 
-bool Program::isolated_request_feasible(const RequestBasePlan& base) const noexcept { return impl_->feasible(base); }
-
 std::vector<SourceCandidate> Program::hybrid_sources(const RequestBasePlan& base, std::uint32_t maximum_frontier) {
     return impl_->hybrid_sources(base, maximum_frontier);
 }
@@ -52,11 +50,7 @@ std::vector<SourceCandidate> Program::hybrid_sources(const RequestBasePlan& base
 BindingReservation Program::start_binding(const RequestBasePlan& base, runtime::LaneId lane,
                                           const SourceCandidate& source, ResumeState* resume,
                                           ExecutionUnitKind, std::uint32_t) {
-    const runtime::ResourceReservation reserved = impl_->start_binding(base, lane, source, resume);
-    BindingReservation out;
-    out.reserved = static_cast<bool>(reserved);
-    out.shortage = reserved.shortage;
-    return out;
+    return impl_->start_binding(base, lane, source, resume);
 }
 
 ContextProgress Program::poll_context(runtime::CancellationFlagView cancellation) {
@@ -72,6 +66,7 @@ std::optional<std::uint32_t> Program::hybrid_prefetch(const RequestBasePlan& bas
 std::uint32_t Program::hybrid_prefetch_room() const noexcept { return impl_->hybrid_prefetch_room(); }
 void Program::hybrid_hold_queue(std::span<const RequestBasePlan* const> queue) { impl_->hybrid_hold_queue(queue); }
 std::uint64_t Program::hybrid_cache_epoch() const noexcept { return impl_->hybrid_cache_epoch(); }
+std::uint32_t Program::hybrid_resume_grid() const noexcept { return impl_->hybrid_resume_grid(); }
 
 runtime::ResourceReservation Program::reserve_units(std::span<const ExecutionUnit> units) {
     return impl_->reserve_units(units);
@@ -117,6 +112,8 @@ AbortResult Program::abort(SequenceHandle sequence) noexcept { return impl_->abo
 void Program::fail_all_cleanup() noexcept { impl_->release_all(); }
 
 bool Program::recover_after_failure() noexcept { return impl_->recover_after_failure(); }
+
+Program::PrefillCapacity Program::prefill_capacity(std::uint32_t prompt_tokens) const { return impl_->prefill_capacity(prompt_tokens); }
 
 void Program::shutdown_cleanup() noexcept {
     impl_->report_cache_layers();
