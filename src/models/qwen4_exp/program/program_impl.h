@@ -4291,6 +4291,22 @@ private:
                     try {
                         wide_fallback_ = DeviceBuffer(wide_work_);
                     } catch (const std::exception& error) {
+                        // The cache shrank under VRAM pressure since the plan-time fit: re-fit against
+                        // what is lendable NOW. The exact route's bits are chunk-invariant, so every
+                        // later prompt prefills at the widest halving that fits (only speed changes).
+                        // This request still fails alone; its successor arrives with the shrunk plan.
+                        const std::int32_t was = chunk_;
+                        if (residency_->frames() > 0 && residency_->lend_pitch() > 0) {
+                            fit_wide_work_to_cache(residency_->lend_capacity_bytes() / residency_->lend_pitch(),
+                                                   residency_->lend_pitch());
+                        }
+                        if (chunk_ < was) {
+                            diagnostic("the prefill workspace will be fitted at " + std::to_string(chunk_) +
+                                           " tokens for following prompts (" +
+                                           std::to_string(wide_work_ >> 20) +
+                                           " MiB); the failed prompt needs a retry",
+                                       DiagnosticLevel::Info);
+                        }
                         throw runtime::RecoverableExecutionError(
                             "the prefill workspace (" + std::to_string(wide_work_ >> 20) +
                             " MiB) could neither be lent from the expert cache nor allocated (" + error.what() +

@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
         return 2;
     }
     const std::string model_path = argv[1], draft_path = argv[2];
+    setvbuf(stdout, nullptr, _IONBF, 0);
     unsigned mc_default       = argc > 3 ? static_cast<unsigned>(std::stoul(argv[3])) : 262144U;
     int lanes                 = argc > 4 ? std::stoi(argv[4]) : 2;
 
@@ -62,7 +63,7 @@ int main(int argc, char** argv) {
     }
     if (cfg.dflash2) {
         const int k = 7; // --draft-tokens auto on Qwen4Exp resolves to 7
-        for (const int ctxcols : {512, 1024, 2048, 4096, 8192}) {
+        for (const int ctxcols : {512, 1024, 2048}) {
             std::printf("dflash2_ctxcols,%d,%u,%zu\n", ctxcols, mc_default,
                         qx::execution::DFlash2::workspace_bytes(c, *cfg.dflash2, lanes, k + 1, ctxcols, mc_default));
         }
